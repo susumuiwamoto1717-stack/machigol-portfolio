@@ -378,3 +378,27 @@
 - パスワードは全会員共通とし、変更・再設定の画面は持ちません。
   ログイン情報は店内に掲示し、パスワードは運営側で定期的に変更します。
 - 会員登録後は先生（管理者）の承認が必要なため、承認待ち画面（`/pending`）を設けています。
+
+---
+
+## 12. ER図
+
+**Figma：** https://www.figma.com/design/DMs13vKV2gTsTIZk947Nqf/Machigol-%E7%94%BB%E9%9D%A2%E9%81%B7%E7%A7%BB%E5%9B%B3?node-id=49-354
+
+画面遷移図と同じ仕分けで、左右2つの枠に分けています。
+
+- **左（緑の破線枠）＝ MVPスコープ**
+  ログイン／かんたん診断／診断結果／履歴／推移 に対応するテーブル群。
+  `auth.users`（Supabase Auth）→ `users`（会員・承認フロー）→ `diagnoses`（診断記録）。
+  履歴・推移の画面は `diagnoses` の集計で実現します。
+- **右（青の破線枠）＝ 本リリースで実装**
+  `subscriptions`（会員プラン）／`ai_usage`（AIコスト集計）／`model_profiles`（お手本の基準値）／
+  `app_config`・`app_config_history`（評価基準の正本と変更履歴）／`daily_report_prefs`・`daily_report_logs`（朝メール）
+
+### 補足
+
+- 全テーブルで行レベルセキュリティ（RLS）を有効化し、本人の行のみ読み書き可・スタッフ（`is_staff`）は全行閲覧可としています。
+- `auth.users` への登録をトリガーに `users` と `subscriptions` の行を自動作成します。
+- 未ログイン時の診断履歴は localStorage をフォールバックとして使用します（DB外・最大100件）。
+
+![ER図](docs/er_diagram.png)
